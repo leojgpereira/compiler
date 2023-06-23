@@ -128,6 +128,28 @@ Token* Scanner::nextToken() {
         }
     }
 
+    /* System.out.println */
+    if(input[position] == 'S') {
+        int startPosition = position;
+        bool isSysout = true;
+        string sysout = "System.out.println";
+
+        for(unsigned long i = 0; i < sysout.length(); i++) {
+            if(sysout[i] != input[position]) {
+                isSysout = false;
+                position = startPosition;
+                break;
+            } else {
+                position++;
+            }
+        }
+
+        if(isSysout) {
+            return new Token(SYSOUT);
+        }
+
+    }
+
     /* Identificadores */
     if(isalpha(input[position])) {
         string idName =  "";
@@ -277,5 +299,5 @@ Token* Scanner::nextToken() {
 
 void Scanner::lexicalError(string message) {
     cout << "Linha " << line << ": " << message << endl;
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
 }
