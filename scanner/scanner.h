@@ -12,6 +12,8 @@ class Scanner {
 
         int getLine();
 
+        Token* getKeyword(string);
+
         Token* nextToken();
 
         void lexicalError(string);

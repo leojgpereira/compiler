@@ -7,9 +7,30 @@ using namespace std;
 enum Names {
     UNDEF,
     ID,
+    NUMBER,
     INTEGER_LITERAL,
     OP,
+    AND,
+    LESS,
+    GREATER,
+    PLUS,
+    MINUS,
+    MUL,
+    DIV,
+    EQUAL,
+    NEQUAL,
+    ASSIGN,
+    NEG,
     SEP,
+    OPAREN,
+    CPAREN,
+    OBRACE,
+    CBRACE,
+    OBRACKET,
+    CBRACKET,
+    SEMICOLON,
+    COMMA,
+    PERIOD,
     BOOLEAN,
     CLASS,
     ELSE,
@@ -52,5 +73,11 @@ class Token {
         Token(int name, int attribute) {
             this->name = name;
             this->attribute = attribute;
+        }
+
+        Token(int name, int attribute, string lexeme) {
+            this->name = name;
+            this->attribute = attribute;
+            this->lexeme = lexeme;
         }
 };
