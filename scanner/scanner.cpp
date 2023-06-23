@@ -66,6 +66,11 @@ Token* Scanner::nextToken() {
         return token;
     }
 
+    /* Espaços em branco */
+    while(isspace(input[position])) {
+        position++;
+    }
+
     /* Comentários */
     if(input[position] == '/') {
         position++;
@@ -78,6 +83,8 @@ Token* Scanner::nextToken() {
             }
 
             position++;
+
+            return nextToken();
         } else if(input[position] == '*') {
             position++;
 
@@ -87,21 +94,19 @@ Token* Scanner::nextToken() {
 
                     if(input[position] == '/') {
                         position++;
+
                         break;
                     }
                 } else {
                     position++;
                 }
             }
+
+            return nextToken();
         } else {
             /* Operador de divisão */
             return new Token(OP, DIV);
         }
-    }
-
-    /* Espaços em branco */
-    while(isspace(input[position])) {
-        position++;
     }
 
     /* Identificadores */
