@@ -67,8 +67,14 @@ Token* Scanner::nextToken() {
     }
 
     /* Espaços em branco */
-    while(isspace(input[position])) {
+    if(isspace(input[position])) {
         position++;
+
+        while(isspace(input[position])) {
+            position++;
+        }
+
+        return nextToken();
     }
 
     /* Comentários */
