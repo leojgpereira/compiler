@@ -68,9 +68,17 @@ Token* Scanner::nextToken() {
 
     /* Espaços em branco */
     if(isspace(input[position])) {
+        if(input[position] == '\n') {
+            this->line++;
+        }
+
         position++;
 
         while(isspace(input[position])) {
+            if(input[position] == '\n') {
+                this->line++;
+            }
+
             position++;
         }
 
@@ -88,6 +96,7 @@ Token* Scanner::nextToken() {
                 position++;
             }
 
+            this->line++;
             position++;
 
             return nextToken();
@@ -95,6 +104,10 @@ Token* Scanner::nextToken() {
             position++;
 
             while(true) {
+                if(input[position] == '\n') {
+                    this->line++;
+                }
+
                 if(input[position] == '*') {
                     position++;
 
@@ -256,6 +269,8 @@ Token* Scanner::nextToken() {
 
         return new Token(SEP, COMMA);
     }
+
+    lexicalError("Token não reconhecido");
 
     return new Token(UNDEF);
 }
