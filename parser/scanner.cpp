@@ -114,6 +114,8 @@ Token* Scanner::nextToken() {
 
                         break;
                     }
+                } else if(input[position] == '\0') {
+                    break;
                 } else {
                     position++;
                 }
