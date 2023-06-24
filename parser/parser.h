@@ -21,6 +21,9 @@ class Parser {
         void VarDeclaration_Prime();
         void MethodDeclaration();
         void MethodDeclaration_Prime();
+        void VarDeclarationStatement();
+        void VarDeclarationStatement_Prime();
+        void VarDeclarationStatement_DoublePrime();
         void Type();
         void Type_Prime();
         void Type_DoublePrime();

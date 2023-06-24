@@ -128,14 +128,45 @@ void Parser::ClassDeclaration_DoublePrime() {
 }
 
 void Parser::VarDeclaration() {
-    Type();
-    match(ID);
-    match(SEMICOLON);
+    if(lookaheadToken->name == INT) {
+        advance();
+        Type_Prime();
+        match(ID);
+        match(SEMICOLON);
+    } else if(lookaheadToken->name == BOOLEAN) {
+        advance();
+        match(ID);
+        match(SEMICOLON);
+    } else if(lookaheadToken->name == ID) {
+        advance();
+        match(ID);
+        match(SEMICOLON);
+    } else {
+        string message = "Token INT, BOOLEAN ou ID esperado. Encontrado token ";
+        message.append(tokenNames[lookaheadToken->name]);
+        message.append(".");
+
+        error(message);
+    }
 }
 
 void Parser::VarDeclaration_Prime() {
-    if(lookaheadToken->name == INT || lookaheadToken->name == BOOLEAN || lookaheadToken->name == ID) {
-        VarDeclaration();
+    if(lookaheadToken->name == INT) {
+        advance();
+        Type_Prime();
+        match(ID);
+        match(SEMICOLON);
+        VarDeclaration_Prime();
+    } else if(lookaheadToken->name == BOOLEAN) {
+        advance();
+        Type_Prime();
+        match(ID);
+        match(SEMICOLON);
+        VarDeclaration_Prime();
+    } else if(lookaheadToken->name == ID) {
+        advance();
+        match(ID);
+        match(SEMICOLON);
         VarDeclaration_Prime();
     }
 }
@@ -148,8 +179,7 @@ void Parser::MethodDeclaration() {
     Type_TriplePrime();
     match(CPAREN);
     match(OBRACE);
-    VarDeclaration_Prime();
-    Statement_DoublePrime();
+    VarDeclarationStatement();
     match(RETURN);
     Expression();
     match(SEMICOLON);
@@ -160,6 +190,75 @@ void Parser::MethodDeclaration_Prime() {
     if(lookaheadToken->name == PUBLIC) {
         MethodDeclaration();
         MethodDeclaration_Prime();
+    }
+}
+
+void Parser::VarDeclarationStatement() {
+    if(lookaheadToken->name == INT) {
+        advance();
+        Type_Prime();
+        match(ID);
+        match(SEMICOLON);
+        VarDeclarationStatement();
+    } else if(lookaheadToken->name == BOOLEAN) {
+        advance();
+        match(ID);
+        match(SEMICOLON);
+        VarDeclarationStatement();
+    } else if(lookaheadToken->name == ID) {
+        advance();
+        VarDeclarationStatement_DoublePrime();
+    } else if(lookaheadToken->attribute == OBRACE) {
+        advance();
+        Statement_DoublePrime();
+        match(CBRACE);
+        Statement_DoublePrime();
+    } else if(lookaheadToken->name == IF) {
+        advance();
+        match(OPAREN);
+        Expression();
+        match(CPAREN);
+        Statement();
+        match(ELSE);
+        Statement();
+        Statement_DoublePrime();
+    } else if(lookaheadToken->name == WHILE) {
+        advance();
+        match(OPAREN);
+        Expression();
+        match(CPAREN);
+        Statement();
+        Statement_DoublePrime();
+    } else if(lookaheadToken->name == SYSOUT) {
+        advance();
+        match(OPAREN);
+        Expression();
+        match(CPAREN);
+        match(SEMICOLON);
+        Statement_DoublePrime();
+    }
+}
+
+void Parser::VarDeclarationStatement_Prime() {
+    if(lookaheadToken->attribute == OBRACE || lookaheadToken->name == IF || lookaheadToken->name == WHILE || lookaheadToken->name == SYSOUT || lookaheadToken->name == ID) {
+        Statement_DoublePrime();
+    }
+}
+
+void Parser::VarDeclarationStatement_DoublePrime() {
+    if(lookaheadToken->name == ID) {
+        advance();
+        match(SEMICOLON);
+        VarDeclarationStatement();
+    } else if(lookaheadToken->attribute == ASSIGN || lookaheadToken->attribute == OBRACKET) {
+        Statement_Prime();
+        Statement_DoublePrime();
+    } else {
+        string message = "Token ID, ASSIGN ou OBRACKET esperado. Encontrado token ";
+        message.append(tokenNames[lookaheadToken->name]);
+        message.append(".");
+
+        error(message);
     }
 }
 
@@ -234,7 +333,7 @@ void Parser::Statement() {
         Statement_Prime();
     } else {
         string message = "Token OBRACE, IF, WHILE, SYSOUT ou ID esperado. Encontrado token ";
-        message.append(tokenNames[lookaheadToken->name]);
+        message.append(tokenNames[lookaheadToken->attribute]);
         message.append(".");
         
         error(message);
@@ -263,8 +362,37 @@ void Parser::Statement_Prime() {
 }
 
 void Parser::Statement_DoublePrime() {
-    if(lookaheadToken->attribute == OBRACE || lookaheadToken->name == IF || lookaheadToken->name == WHILE || lookaheadToken->name == SYSOUT || lookaheadToken->name == ID) {
+    if(lookaheadToken->attribute == OBRACE) {
+        advance();
+        Statement_DoublePrime();
+        match(CBRACE);
+        Statement_DoublePrime();
+    } else if(lookaheadToken->name == IF) {
+        advance();
+        match(OPAREN);
+        Expression();
+        match(CPAREN);
         Statement();
+        match(ELSE);
+        Statement();
+        Statement_DoublePrime();
+    } else if(lookaheadToken->name == WHILE) {
+        advance();
+        match(OPAREN);
+        Expression();
+        match(CPAREN);
+        Statement();
+        Statement_DoublePrime();
+    } else if(lookaheadToken->name == SYSOUT) {
+        advance();
+        match(OPAREN);
+        Expression();
+        match(CPAREN);
+        match(SEMICOLON);
+        Statement_DoublePrime();
+    } else if(lookaheadToken->name == ID) {
+        advance();
+        Statement_Prime();
         Statement_DoublePrime();
     }
 }
@@ -300,7 +428,7 @@ void Parser::Expression() {
         Expression_Prime();
     } else {
         string message = "Token NUMBER, TRUE, FALSE, ID, THIS, NEW, NEG ou OPAREN esperado. Encontrado token ";
-        message.append(tokenNames[lookaheadToken->name]);
+        message.append(tokenNames[lookaheadToken->attribute]);
         message.append(".");
         
         error(message);
