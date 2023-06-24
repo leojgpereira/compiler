@@ -35,8 +35,6 @@ Scanner::Scanner(string input) {
         }
 
         inputFile.close();
-
-        cout << "Entrada: " << this->input;
     } else {
         cout << "Unable to open file\n";
     }
