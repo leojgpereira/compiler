@@ -230,8 +230,6 @@ Token* Scanner::nextToken() {
             token = new Token(OP, EQUAL);
             return token;
         } else {
-            position++;
-
             token = new Token(OP, ASSIGN);
             return token;
         }
@@ -244,8 +242,6 @@ Token* Scanner::nextToken() {
             token = new Token(OP, NEQUAL);
             return token;
         } else {
-            position++;
-
             token = new Token(OP, NEG);
             return token;
         }
