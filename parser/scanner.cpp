@@ -57,6 +57,7 @@ Token* Scanner::getKeyword(string lexeme) {
 Token* Scanner::nextToken() {
     Token* token;
     string lexeme;
+    string errorMsg = "Token '";
 
     /* Fim de arquivo */
     if(input[position] == '\0') {
@@ -196,6 +197,11 @@ Token* Scanner::nextToken() {
 
             token = new Token(OP, AND);
             return token;
+        } else {
+            errorMsg.append("&' não reconhecido");
+            lexicalError(errorMsg);
+
+            return new Token(UNDEF);
         }
     } else if(input[position] == '+') {
         position++;
@@ -287,12 +293,16 @@ Token* Scanner::nextToken() {
         return new Token(SEP, COMMA);
     }
 
-    lexicalError("Token não reconhecido");
+    
+    errorMsg.push_back(input[position]);
+    errorMsg.append("' não reconhecido");
+
+    lexicalError(errorMsg);
+    position++;
 
     return new Token(UNDEF);
 }
 
 void Scanner::lexicalError(string message) {
-    cout << "Linha " << line << ": " << message << endl;
-    // exit(EXIT_FAILURE);
+    cout << "Erro: Linha " << line << ": " << message << endl;
 }
