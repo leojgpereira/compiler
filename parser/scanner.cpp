@@ -147,25 +147,24 @@ Token* Scanner::nextToken() {
         if(isSysout) {
             return new Token(SYSOUT);
         }
-
     }
 
     /* Identificadores */
     if(isalpha(input[position])) {
-        string idName =  "";
-        idName.push_back(input[position]);
+        lexeme =  "";
+        lexeme.push_back(input[position]);
 
         position++;
 
         while(isalnum(input[position]) || input[position] == '_') {
-            idName.push_back(input[position]);
+            lexeme.push_back(input[position]);
             position++;
         }
 
-        token = getKeyword(idName);
+        token = getKeyword(lexeme);
 
         if(token == NULL) {
-            token = new Token(ID, idName);
+            token = new Token(ID, lexeme);
         }
 
         
@@ -174,17 +173,17 @@ Token* Scanner::nextToken() {
 
     /* Números Inteiros */
     if(isdigit(input[position])) {
-        string numberValue = "";
-        numberValue.push_back(input[position]);
+        lexeme = "";
+        lexeme.push_back(input[position]);
 
         position++;
 
         while(isdigit(input[position])) {
-            numberValue.push_back(input[position]);
+            lexeme.push_back(input[position]);
             position++;
         }
 
-        token = new Token(NUMBER, INTEGER_LITERAL, numberValue);
+        token = new Token(NUMBER, INTEGER_LITERAL, lexeme);
         return token;
     }
 
