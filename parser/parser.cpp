@@ -51,6 +51,19 @@ string tokenNames[] = {
 
 Parser::Parser(string input) {
     scanner = new Scanner(input);
+    hasError = false;
+
+    syncTable = {
+        {"VarDeclaration", {}},
+        {"VarDeclarationStatement_Prime", {RETURN}},
+        {"Type", {ID}},
+        {"Statement", {ID, OBRACE, CBRACE, RETURN, IF, ELSE, WHILE, SYSOUT}},
+        {"Statement_Prime", {ID, OBRACE, CBRACE, RETURN, IF, ELSE, WHILE, SYSOUT}},
+        {"Expression", {OBRACKET, CBRACKET, SEMICOLON, CPAREN, COMMA, PERIOD, AND, LESS, GREATER, EQUAL, NEQUAL, PLUS, MINUS, MUL, DIV}},
+        {"Expression_DoublePrime", {OBRACKET, CBRACKET, SEMICOLON, CPAREN, COMMA, PERIOD, AND, LESS, GREATER, EQUAL, NEQUAL, PLUS, MINUS, MUL, DIV}},
+        {"Expression_TriplePrime", {OBRACKET, CBRACKET, SEMICOLON, CPAREN, COMMA, PERIOD, AND, LESS, GREATER, EQUAL, NEQUAL, PLUS, MINUS, MUL, DIV}},
+        {"Op", {ID, OPAREN, INTEGER_LITERAL, TRUE, FALSE, THIS, NEW, NEG}}
+    };
 }
 
 void Parser::advance() {
@@ -66,7 +79,25 @@ void Parser::match(int token) {
         else
             error(lookaheadToken->name, token);
 
+        advance();
     }
+}
+
+bool Parser::isSync(string production) {
+    vector<int> syncTokens = syncTable[production];
+
+    for(auto& token : syncTokens) {
+        if(lookaheadToken->name == token || lookaheadToken->attribute == token) {
+            return true;
+        }
+    }
+
+    if(lookaheadToken->name == END_OF_FILE) {
+        cout << "Erro de compilação!" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    return false;
 }
 
 void Parser::run() {
@@ -74,7 +105,11 @@ void Parser::run() {
 
     Program();
 
-    cout << "Compilação encerrada com sucesso!" << endl;
+    if(hasError) {
+        cout << "Erro de compilação!" << endl;
+    } else {
+        cout << "Compilação encerrada com sucesso!" << endl;
+    }
 }
 
 void Parser::Program() {
@@ -147,6 +182,10 @@ void Parser::VarDeclaration() {
         message.append(".");
 
         error(message);
+
+        while(!isSync("VarDeclaration")) {
+            advance();
+        }
     }
 }
 
@@ -207,7 +246,7 @@ void Parser::VarDeclarationStatement() {
         VarDeclarationStatement();
     } else if(lookaheadToken->name == ID) {
         advance();
-        VarDeclarationStatement_DoublePrime();
+        VarDeclarationStatement_Prime();
     } else if(lookaheadToken->attribute == OBRACE) {
         advance();
         Statement_DoublePrime();
@@ -240,12 +279,6 @@ void Parser::VarDeclarationStatement() {
 }
 
 void Parser::VarDeclarationStatement_Prime() {
-    if(lookaheadToken->attribute == OBRACE || lookaheadToken->name == IF || lookaheadToken->name == WHILE || lookaheadToken->name == SYSOUT || lookaheadToken->name == ID) {
-        Statement_DoublePrime();
-    }
-}
-
-void Parser::VarDeclarationStatement_DoublePrime() {
     if(lookaheadToken->name == ID) {
         advance();
         match(SEMICOLON);
@@ -259,6 +292,11 @@ void Parser::VarDeclarationStatement_DoublePrime() {
         message.append(".");
 
         error(message);
+
+        while(!isSync("VarDeclarationStatement_Prime")) {
+            advance();
+        }
+
     }
 }
 
@@ -276,6 +314,11 @@ void Parser::Type() {
         message.append(".");
 
         error(message);
+
+        while(!isSync("Type")) {
+            advance();
+        }
+
     }
 }
 
@@ -337,6 +380,11 @@ void Parser::Statement() {
         message.append(".");
         
         error(message);
+
+        while(!isSync("Statement")) {
+            advance();
+        }
+
     }
 }
 
@@ -358,6 +406,11 @@ void Parser::Statement_Prime() {
         message.append(".");
         
         error(message);
+
+        while(!isSync("Statement_Prime")) {
+            advance();
+        }
+
     }
 }
 
@@ -432,6 +485,11 @@ void Parser::Expression() {
         message.append(".");
         
         error(message);
+
+        while(!isSync("Expression")) {
+            advance();
+        }
+
     }
 }
 
@@ -467,6 +525,11 @@ void Parser::Expression_DoublePrime() {
         message.append(".");
         
         error(message);
+
+        while(!isSync("Expression_DoublePrime")) {
+            advance();
+        }
+
     }
 }
 
@@ -486,6 +549,11 @@ void Parser::Expression_TriplePrime() {
         message.append(".");
         
         error(message);
+
+        while(!isSync("Expression_TriplePrime")) {
+            advance();
+        }
+
     }
 }
 
@@ -529,22 +597,31 @@ void Parser::Op() {
         message.append(".");
         
         error(message);
+
+        while(!isSync("Op")) {
+            advance();
+        }
+
     }
 }
 
 
 void Parser::error(int found, int expected) {
+    hasError = true;
+
     string message = "Token ";
     message.append(tokenNames[expected]);
     message.append(" esperado. Encontrado token ");
     message.append(tokenNames[found]);
     message.append(".");
 
-    cout << "Linha " << scanner->getLine() << ": " << message << endl;
-    exit(EXIT_FAILURE);
+    cout << "Erro: Linha " << scanner->getLine() << ": " << message << endl;
+    // exit(EXIT_FAILURE);
 }
 
 void Parser::error(string message) {
-    cout << "Linha " << scanner->getLine() << ": " << message << endl;
-    exit(EXIT_FAILURE);
+    hasError = true;
+
+    cout << "Erro: Linha " << scanner->getLine() << ": " << message << endl;
+    // exit(EXIT_FAILURE);
 }

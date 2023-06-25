@@ -1,9 +1,13 @@
+#include <vector>
+#include <map>
 #include "scanner.h"
 
 class Parser {
     private:
         Scanner* scanner;
         Token* lookaheadToken;
+        bool hasError;
+        map<string, vector<int>> syncTable;
 
         void advance();
         void match(int);
@@ -11,6 +15,7 @@ class Parser {
     public:
         Parser(string);
         void run();
+        bool isSync(string);
 
         void Program();
         void MainClass();
@@ -23,7 +28,6 @@ class Parser {
         void MethodDeclaration_Prime();
         void VarDeclarationStatement();
         void VarDeclarationStatement_Prime();
-        void VarDeclarationStatement_DoublePrime();
         void Type();
         void Type_Prime();
         void Type_DoublePrime();
