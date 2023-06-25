@@ -6,6 +6,7 @@ class Parser {
     private:
         Scanner* scanner;
         Token* lookaheadToken;
+        bool panicMode;
         bool hasError;
         map<string, vector<int>> syncTable;
 

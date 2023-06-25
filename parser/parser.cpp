@@ -52,7 +52,9 @@ string tokenNames[] = {
 Parser::Parser(string input) {
     scanner = new Scanner(input);
     hasError = false;
+    panicMode = false;
 
+    /* Tabela montada a partir do cálculo dos FOLLOWs da gramática modificada */
     syncTable = {
         {"VarDeclaration", {}},
         {"VarDeclarationStatement_Prime", {RETURN}},
@@ -68,18 +70,59 @@ Parser::Parser(string input) {
 
 void Parser::advance() {
     lookaheadToken = scanner->nextToken();
+    panicMode = false;
 }
 
 void Parser::match(int token) {
-    if(lookaheadToken->name == token || lookaheadToken->attribute == token) {
-        advance();
-    } else {
-        if(lookaheadToken->attribute != UNDEF)
-            error(lookaheadToken->attribute, token);
-        else
-            error(lookaheadToken->name, token);
+    if(!panicMode) {
+        if(lookaheadToken->name == token || lookaheadToken->attribute == token) {
+            advance();
+        } else if(lookaheadToken->name == UNDEF) {
+            if(lookaheadToken->attribute != UNDEF)
+                error(lookaheadToken->attribute, token);
+            else
+                error(lookaheadToken->name, token);
+            
+            advance();
+        } else {
+            if(lookaheadToken->attribute != UNDEF)
+                error(lookaheadToken->attribute, token);
+            else
+                error(lookaheadToken->name, token);
 
-        advance();
+            panicMode = true;
+        }
+    } else {
+        if(lookaheadToken->name == token || lookaheadToken->attribute == token) {
+            advance();
+        } else if(lookaheadToken->name == UNDEF) {
+            if(lookaheadToken->attribute != UNDEF)
+                error(lookaheadToken->attribute, token);
+            else
+                error(lookaheadToken->name, token);
+            
+            advance();
+        } else {
+            advance();
+
+            if(lookaheadToken->name == token || lookaheadToken->attribute == token) {
+                advance();
+            } else if(lookaheadToken->name == UNDEF) {
+                if(lookaheadToken->attribute != UNDEF)
+                    error(lookaheadToken->attribute, token);
+                else
+                    error(lookaheadToken->name, token);
+                
+                advance();
+            } else {
+                if(lookaheadToken->attribute != UNDEF)
+                    error(lookaheadToken->attribute, token);
+                else
+                    error(lookaheadToken->name, token);
+                
+                panicMode = true;
+            }
+        }
     }
 }
 
@@ -107,6 +150,7 @@ void Parser::run() {
 
     if(hasError) {
         cout << "Erro de compilação!" << endl;
+        exit(EXIT_FAILURE);
     } else {
         cout << "Compilação encerrada com sucesso!" << endl;
     }
@@ -616,12 +660,10 @@ void Parser::error(int found, int expected) {
     message.append(".");
 
     cout << "Erro: Linha " << scanner->getLine() << ": " << message << endl;
-    // exit(EXIT_FAILURE);
 }
 
 void Parser::error(string message) {
     hasError = true;
 
     cout << "Erro: Linha " << scanner->getLine() << ": " << message << endl;
-    // exit(EXIT_FAILURE);
 }
