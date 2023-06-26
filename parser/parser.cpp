@@ -74,9 +74,12 @@ void Parser::advance() {
 }
 
 void Parser::match(int token) {
+    /* Verifica se um mismatch ocorreu anteriormente */
     if(!panicMode) {
+        /* Verifica se o lookahead casa com o token fornecido */
         if(lookaheadToken->name == token || lookaheadToken->attribute == token) {
             advance();
+        /* Verifica se o token recebido é um token que não faz parte da linguagem */
         } else if(lookaheadToken->name == UNDEF) {
             if(lookaheadToken->attribute != UNDEF)
                 error(lookaheadToken->attribute, token);
@@ -84,17 +87,21 @@ void Parser::match(int token) {
                 error(lookaheadToken->name, token);
             
             advance();
+        /* Token não casou com o esperado */
         } else {
             if(lookaheadToken->attribute != UNDEF)
                 error(lookaheadToken->attribute, token);
             else
                 error(lookaheadToken->name, token);
 
+            /* Seta flag informando que houve um mismatch */
             panicMode = true;
         }
     } else {
+        /* Verifica se o lookahead casa com o token fornecido */
         if(lookaheadToken->name == token || lookaheadToken->attribute == token) {
             advance();
+        /* Verifica se o token recebido é um token que não faz parte da linguagem */
         } else if(lookaheadToken->name == UNDEF) {
             if(lookaheadToken->attribute != UNDEF)
                 error(lookaheadToken->attribute, token);
@@ -102,11 +109,15 @@ void Parser::match(int token) {
                 error(lookaheadToken->name, token);
             
             advance();
+        /* Token não casou com o esperado */
         } else {
+            /* Pega o próximo token */
             advance();
 
+            /* Verifica se o lookahead casa com o token fornecido */
             if(lookaheadToken->name == token || lookaheadToken->attribute == token) {
                 advance();
+            /* Verifica se o token recebido é um token que não faz parte da linguagem */
             } else if(lookaheadToken->name == UNDEF) {
                 if(lookaheadToken->attribute != UNDEF)
                     error(lookaheadToken->attribute, token);
@@ -114,6 +125,7 @@ void Parser::match(int token) {
                     error(lookaheadToken->name, token);
                 
                 advance();
+            /* Token não casou com o esperado */
             } else {
                 if(lookaheadToken->attribute != UNDEF)
                     error(lookaheadToken->attribute, token);
@@ -126,15 +138,20 @@ void Parser::match(int token) {
     }
 }
 
+/* Verifica se o lookahead pertence a um conjunto de sincronismo de uma produção production */
 bool Parser::isSync(string production) {
+    /* Carrega os tokens de sincronismo da production */
     vector<int> syncTokens = syncTable[production];
 
+    /* Itera sobre os tokens de sincronismo */
     for(auto& token : syncTokens) {
+        /* Verifica se é um token de sincronismo */
         if(lookaheadToken->name == token || lookaheadToken->attribute == token) {
             return true;
         }
     }
 
+    /* Verifica se alcançou o fim do arquivo sem encontrar um token de sincronismo e para a compilação */
     if(lookaheadToken->name == END_OF_FILE) {
         cout << "Erro de compilação!" << endl;
         exit(EXIT_FAILURE);
@@ -148,6 +165,7 @@ void Parser::run() {
 
     Program();
 
+    /* Verifia se houve erros de compilação */
     if(hasError) {
         cout << "Erro de compilação!" << endl;
         exit(EXIT_FAILURE);
@@ -206,6 +224,7 @@ void Parser::ClassDeclaration_DoublePrime() {
     }
 }
 
+/* Como tivemos que fazer alguns passos de derivação para eliminar o não determinísmo essa produção acabou não sendo usada diretamente */
 void Parser::VarDeclaration() {
     if(lookaheadToken->name == INT) {
         advance();
@@ -222,7 +241,12 @@ void Parser::VarDeclaration() {
         match(SEMICOLON);
     } else {
         string message = "Token INT, BOOLEAN ou ID esperado. Encontrado token ";
-        message.append(tokenNames[lookaheadToken->name]);
+
+        if(lookaheadToken->attribute != UNDEF)
+            message.append(tokenNames[lookaheadToken->attribute]);
+        else
+            message.append(tokenNames[lookaheadToken->name]);
+
         message.append(".");
 
         error(message);
@@ -332,15 +356,21 @@ void Parser::VarDeclarationStatement_Prime() {
         Statement_DoublePrime();
     } else {
         string message = "Token ID, ASSIGN ou OBRACKET esperado. Encontrado token ";
-        message.append(tokenNames[lookaheadToken->name]);
+
+        if(lookaheadToken->attribute != UNDEF)
+            message.append(tokenNames[lookaheadToken->attribute]);
+        else
+            message.append(tokenNames[lookaheadToken->name]);
+
         message.append(".");
 
+        /* Imprime mensagem de erro */
         error(message);
 
+        /* Lê o próximo token enquanto não encontra um token do conjunto de sincronismo da produção */
         while(!isSync("VarDeclarationStatement_Prime")) {
             advance();
         }
-
     }
 }
 
@@ -354,15 +384,21 @@ void Parser::Type() {
         advance();
     } else {
         string message = "Token INT, BOOLEAN ou ID esperado. Encontrado token ";
-        message.append(tokenNames[lookaheadToken->name]);
+
+        if(lookaheadToken->attribute != UNDEF)
+            message.append(tokenNames[lookaheadToken->attribute]);
+        else
+            message.append(tokenNames[lookaheadToken->name]);
+
         message.append(".");
 
+        /* Imprime mensagem de erro */
         error(message);
 
+        /* Lê o próximo token enquanto não encontra um token do conjunto de sincronismo da produção */
         while(!isSync("Type")) {
             advance();
         }
-
     }
 }
 
@@ -420,15 +456,21 @@ void Parser::Statement() {
         Statement_Prime();
     } else {
         string message = "Token OBRACE, IF, WHILE, SYSOUT ou ID esperado. Encontrado token ";
-        message.append(tokenNames[lookaheadToken->attribute]);
+
+        if(lookaheadToken->attribute != UNDEF)
+            message.append(tokenNames[lookaheadToken->attribute]);
+        else
+            message.append(tokenNames[lookaheadToken->name]);
+
         message.append(".");
         
+        /* Imprime mensagem de erro */
         error(message);
 
+        /* Lê o próximo token enquanto não encontra um token do conjunto de sincronismo da produção */
         while(!isSync("Statement")) {
             advance();
         }
-
     }
 }
 
@@ -446,15 +488,21 @@ void Parser::Statement_Prime() {
         match(SEMICOLON);
     } else {
         string message = "Token ASSIGN ou OBRACKET esperado. Encontrado token ";
-        message.append(tokenNames[lookaheadToken->name]);
+
+        if(lookaheadToken->attribute != UNDEF)
+            message.append(tokenNames[lookaheadToken->attribute]);
+        else
+            message.append(tokenNames[lookaheadToken->name]);
+
         message.append(".");
         
+        /* Imprime mensagem de erro */
         error(message);
 
+        /* Lê o próximo token enquanto não encontra um token do conjunto de sincronismo da produção */
         while(!isSync("Statement_Prime")) {
             advance();
         }
-
     }
 }
 
@@ -525,15 +573,21 @@ void Parser::Expression() {
         Expression_Prime();
     } else {
         string message = "Token NUMBER, TRUE, FALSE, ID, THIS, NEW, NEG ou OPAREN esperado. Encontrado token ";
-        message.append(tokenNames[lookaheadToken->attribute]);
+
+        if(lookaheadToken->attribute != UNDEF)
+            message.append(tokenNames[lookaheadToken->attribute]);
+        else
+            message.append(tokenNames[lookaheadToken->name]);
+
         message.append(".");
         
+        /* Imprime mensagem de erro */
         error(message);
-
+        
+        /* Lê o próximo token enquanto não encontra um token do conjunto de sincronismo da produção */
         while(!isSync("Expression")) {
             advance();
         }
-
     }
 }
 
@@ -565,15 +619,21 @@ void Parser::Expression_DoublePrime() {
         match(CPAREN);
     } else {
         string message = "Token INT ou ID esperado. Encontrado token ";
-        message.append(tokenNames[lookaheadToken->name]);
+
+        if(lookaheadToken->attribute != UNDEF)
+            message.append(tokenNames[lookaheadToken->attribute]);
+        else
+            message.append(tokenNames[lookaheadToken->name]);
+
         message.append(".");
         
+        /* Imprime mensagem de erro */
         error(message);
 
+        /* Lê o próximo token enquanto não encontra um token do conjunto de sincronismo da produção */
         while(!isSync("Expression_DoublePrime")) {
             advance();
         }
-
     }
 }
 
@@ -589,15 +649,21 @@ void Parser::Expression_TriplePrime() {
         Expression_Prime();
     } else {
         string message = "Token LENGTH ou ID esperado. Encontrado token ";
-        message.append(tokenNames[lookaheadToken->name]);
+        
+        if(lookaheadToken->attribute != UNDEF)
+            message.append(tokenNames[lookaheadToken->attribute]);
+        else
+            message.append(tokenNames[lookaheadToken->name]);
+
         message.append(".");
         
+        /* Imprime mensagem de erro */
         error(message);
 
+        /* Lê o próximo token enquanto não encontra um token do conjunto de sincronismo da produção */
         while(!isSync("Expression_TriplePrime")) {
             advance();
         }
-
     }
 }
 
@@ -637,20 +703,27 @@ void Parser::Op() {
         advance();
     } else {
         string message = "Token OP esperado. Encontrado token ";
-        message.append(tokenNames[lookaheadToken->name]);
+
+        if(lookaheadToken->attribute != UNDEF)
+            message.append(tokenNames[lookaheadToken->attribute]);
+        else
+            message.append(tokenNames[lookaheadToken->name]);
+
         message.append(".");
         
+        /* Imprime mensagem de erro */
         error(message);
 
+        /* Lê o próximo token enquanto não encontra um token do conjunto de sincronismo da produção */
         while(!isSync("Op")) {
             advance();
         }
-
     }
 }
 
 
 void Parser::error(int found, int expected) {
+    /* Seta flag de erro */
     hasError = true;
 
     string message = "Token ";
@@ -663,6 +736,7 @@ void Parser::error(int found, int expected) {
 }
 
 void Parser::error(string message) {
+    /* Seta flag de erro */
     hasError = true;
 
     cout << "Erro: Linha " << scanner->getLine() << ": " << message << endl;

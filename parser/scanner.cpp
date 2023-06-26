@@ -295,7 +295,7 @@ Token* Scanner::nextToken() {
 
     
     errorMsg.push_back(input[position]);
-    errorMsg.append("' não reconhecido");
+    errorMsg.append("' não reconhecido.");
 
     lexicalError(errorMsg);
     position++;
