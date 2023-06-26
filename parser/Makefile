@@ -1,7 +1,5 @@
-all: parser
-
-parser:
-	g++ *.cpp -Wall -pedantic -o compiler
+all:
+	g++ -Wall *.cpp -o mjc
 
 clean:
 	rm -f compiler
