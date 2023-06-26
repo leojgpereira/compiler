@@ -1,3 +1,7 @@
+/* 
+ *  Autores: Alexandre Diniz de Souza e Leandro José Gonçalves Pereira
+ */
+
 #include "parser.h"
 
 int main(int argc, char* argv[]) {
