@@ -3,4 +3,5 @@ all:
 
 clean:
 	rm -f compiler
+	rm -f mjc
 	rm -f *.o
